@@ -74,6 +74,25 @@ def document_handler(message):
     bot.reply_to(message, "𝘾𝙝𝙤𝙤𝙨𝙚 𝙏𝙝𝙚 𝙂𝙖𝙩𝙚𝙬𝙖𝙮 𝙔𝙤𝙪 𝙒𝙖𝙣𝙩 𝙏𝙤 𝙐𝙨𝙚", reply_markup=keyboard)
 
 # --- بەردەوامیا پشکێن دی یێن کۆدی وەک خۆ ---
+@bot.message_handler(commands=['code'])
+def make_key(message):
+    id = message.from_user.id
+    if str(id) == "6421172099": # ئەڤە ناسنامەیا تەیا ئەدمینی یە کو د کۆدی دا هەی
+        try:
+            args = message.text.split()
+            if len(args) < 2:
+                bot.reply_to(message, "⚠️ تکایە ژمارەیا ڕۆژان بنڤیسە! نموونە: /code 30")
+                return
+            
+            days = args[1]
+            key = "-".join(''.join(random.choices(string.ascii_uppercase + string.digits, k=4)) for _ in range(4))
+            
+            # ل ڤێرێ کۆدێ پاشکەفتکرنا کلیلێ د ناڤ data.json دا زێدە بکە
+            bot.reply_to(message, f"✅ Key Created!\n\nPLAN -> VIP\nDAYS -> {days}\nKEY -> `/redeem {key}`", parse_mode="Markdown")
+        except Exception as e:
+            bot.reply_to(message, f"❌ Error: {str(e)}")
+    else:
+        bot.reply_to(message, "❌ تنێ ئەدمین دشێت کلیلان دروست بکەت!")
 
 print("Bot Start On ✅")
 bot.infinity_polling()
