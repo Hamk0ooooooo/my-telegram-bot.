@@ -1,11 +1,1 @@
-pyTelegramBotAPI
-requests
-beautifulsoup4
-cloudscraper
-fake-useragent
-faker
-requests_toolbelt
-pyfiglet
-colorama
-getuseragent
-user_agent
+pyTelegramBotAPI, requests, beautifulsoup4, cloudscraper, fake-useragent, faker, requests_toolbelt, getuseragent.
