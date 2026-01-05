@@ -1,11 +1,6 @@
-import telebot, os
-import re, json
-import requests
-import time, random
-import string
+import telebot, os, re, json, requests, time, random, string, threading
 from telebot import types
 from datetime import datetime, timedelta
-import threading
 
 # ئەگەر ئەڤ فایلە (gatet) ل دەف تە هەبیت دێ کار کەت
 try:
@@ -20,79 +15,101 @@ admin = 6421172099
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    def my_function():
-        name = message.from_user.first_name
-        id = message.from_user.id
-        
-        # دروستکرن یان خویندنا فایلا داتا
-        try:
-            with open('data.json', 'r') as file:
-                json_data = json.load(file)
-            BL = json_data.get(str(id), {}).get('plan', '𝗙𝗥𝗘𝗘')
-        except:
-            BL = '𝗙𝗥𝗘𝗘'
-            if not os.path.exists('data.json'):
-                with open('data.json', 'w') as f: json.dump({}, f)
-
-        keyboard = types.InlineKeyboardMarkup()
-        # ڕاستکرنا لینکێ OWNER
-        contact_button = types.InlineKeyboardButton(text="✨ OWNER ✨", url="https://t.me/d_7amko")
-        keyboard.add(contact_button)
-
-        if BL == '𝗙𝗥𝗘𝗘':
-            photo_url = 'https://t.me/hamk0oo/29'
-            caption = f"<b>𝑯𝑬𝑳𝑳𝑶 {name}\nThe VIP plan allows you to use all tools...\nTo purchase: @d_7amko</b>"
-            bot.send_photo(chat_id=message.chat.id, photo=photo_url, caption=caption, reply_markup=keyboard)
-        else:
-            photo_url = 'https://t.me/hamk0oo/29'
-            bot.send_photo(chat_id=message.chat.id, photo=photo_url, caption="𝘾𝙡𝙞𝙘𝙠 /cmds 𝙏𝙤 𝙑𝙞𝙚𝙬 𝙏𝙝𝙚 𝘾𝙤𝙢𝙢𝙖𝙣𝙙𝙨", reply_markup=keyboard)
-
-    threading.Thread(target=my_function).start()
-
-@bot.message_handler(commands=["cmds"])
-def cmds_handler(message):
     id = message.from_user.id
-    try:
-        with open('data.json', 'r') as file:
-            json_data = json.load(file)
-        BL = json_data.get(str(id), {}).get('plan', '𝗙𝗥𝗘𝗘')
-    except:
-        BL = '𝗙𝗥𝗘𝗘'
+    # دروستکرن یان خویندنا فایلا داتا
+    if not os.path.exists('data.json'):
+        with open('data.json', 'w') as f: json.dump({}, f)
     
+    with open('data.json', 'r') as file:
+        try:
+            json_data = json.load(file)
+        except:
+            json_data = {}
+    
+    BL = json_data.get(str(id), {}).get('plan', '𝗙𝗥𝗘𝗘')
     keyboard = types.InlineKeyboardMarkup()
-    btn = types.InlineKeyboardButton(text=f"✨ {BL} ✨", callback_data='plan')
-    keyboard.add(btn)
-    bot.send_message(chat_id=message.chat.id, text="<b>𝗧𝗵𝗲𝘀𝗲 𝗔𝗿𝗲 𝗧𝗵𝗲 𝗕𝗼𝘁'𝗦 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀\n✅ SHOPIFY AUTO\n✅ BRAINTREE AUTH</b>", reply_markup=keyboard)
+    contact_button = types.InlineKeyboardButton(text="✨ OWNER ✨", url="https://t.me/d_7amko")
+    keyboard.add(contact_button)
+
+    photo_url = 'https://t.me/hamk0oo/29'
+    if BL == '𝗙𝗥𝗘𝗘':
+        caption = f"<b>𝑯𝑬𝑳𝑳𝑶 {message.from_user.first_name}\nYour Plan: {BL}\nTo purchase VIP: @d_7amko</b>"
+    else:
+        caption = f"<b>𝑯𝑬𝑳𝑳𝑶 {message.from_user.first_name}\nYour Plan: {BL}\nSend .txt file to start checking!</b>"
+    
+    bot.send_photo(message.chat.id, photo=photo_url, caption=caption, reply_markup=keyboard)
+
+@bot.message_handler(commands=["stop"])
+def stop_checking(message):
+    stopuser[message.from_user.id] = True
+    bot.reply_to(message, "<b>Stopping soon... 🛑</b>")
 
 @bot.message_handler(content_types=["document"])
 def document_handler(message):
     id = message.from_user.id
-    keyboard = types.InlineKeyboardMarkup()
-    # ڕاستکرنا لینکێ OWNER ل ڤێرێ ژی
-    contact_button = types.InlineKeyboardButton(text="✨ 𝗢𝗪𝗡𝗘𝗥 ✨", url="https://t.me/d_7amko")
-    keyboard.add(contact_button)
-    bot.reply_to(message, "𝘾𝙝𝙤𝙤𝙨𝙚 𝙏𝙝𝙚 𝙂𝙖𝙩𝙚𝙬𝙖𝙮 𝙔𝙤𝙪 𝙒𝙖𝙣𝙩 𝙏𝙤 𝙐𝙨𝙚", reply_markup=keyboard)
+    # پشکنینا پلانا VIP
+    with open('data.json', 'r') as file:
+        data = json.load(file)
+    if data.get(str(id), {}).get('plan') != '𝗩𝗜𝗣' and id != admin:
+        bot.reply_to(message, "<b>Buy VIP to use the checker! ❌</b>")
+        return
 
-# --- بەردەوامیا پشکێن دی یێن کۆدی وەک خۆ ---
+    # وەرگرتنا فایلێ
+    file_info = bot.get_file(message.document.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
+    
+    with open("combo.txt", "wb") as f:
+        f.write(downloaded_file)
+    
+    keyboard = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton("Shopify Charge 💳", callback_data='shopify')
+    btn2 = types.InlineKeyboardButton("Braintree Auth 🔐", callback_data='braintree')
+    keyboard.add(btn1, btn2)
+    
+    bot.reply_to(message, "<b>Select Gateway to start:</b>", reply_markup=keyboard)
+
+@bot.callback_query_handler(func=lambda call: call.data in ['shopify', 'braintree'])
+def start_checking(call):
+    id = call.from_user.id
+    stopuser[id] = False
+    
+    with open("combo.txt", "r") as f:
+        lines = f.readlines()
+    
+    total = len(lines)
+    msg = bot.send_message(call.message.chat.id, f"<b>Processing: 0/{total}</b>")
+    
+    live = 0
+    dead = 0
+    
+    for line in lines:
+        if stopuser.get(id): break
+        
+        card = line.strip()
+        # ل ڤێرێ بانگکرنا فەنکشنا فەحسکرنێ ژ گەیتێ تە (Tele, Shopify, هتد)
+        # ئەڤە نموونەیە، دڤێت ناڤێ فەنکشنێ ژ gatet.py بزانی
+        try:
+            # وەک نموونە: result = Tele(card)
+            # دێ ل ڤێرێ ئەنجام هێتە پۆستکرن
+            pass 
+        except:
+            pass
+        
+        # ل ڤێرێ هەر کارتەکا لایڤ (Live) بۆت دێ بۆ تە فرێکەت
+        # bot.send_message(call.message.chat.id, f"✅ LIVE: {card}")
+        
+    bot.edit_message_text(f"<b>Check Completed! ✅\nTotal: {total}</b>", call.message.chat.id, msg.message_id)
+
 @bot.message_handler(commands=['code'])
 def make_key(message):
-    id = message.from_user.id
-    if str(id) == "6421172099": # ئەڤە ناسنامەیا تەیا ئەدمینی یە کو د کۆدی دا هەی
+    if message.from_user.id == admin:
         try:
-            args = message.text.split()
-            if len(args) < 2:
-                bot.reply_to(message, "⚠️ تکایە ژمارەیا ڕۆژان بنڤیسە! نموونە: /code 30")
-                return
-            
-            days = args[1]
-            key = "-".join(''.join(random.choices(string.ascii_uppercase + string.digits, k=4)) for _ in range(4))
-            
-            # ل ڤێرێ کۆدێ پاشکەفتکرنا کلیلێ د ناڤ data.json دا زێدە بکە
-            bot.reply_to(message, f"✅ Key Created!\n\nPLAN -> VIP\nDAYS -> {days}\nKEY -> `/redeem {key}`", parse_mode="Markdown")
-        except Exception as e:
-            bot.reply_to(message, f"❌ Error: {str(e)}")
-    else:
-        bot.reply_to(message, "❌ تنێ ئەدمین دشێت کلیلان دروست بکەت!")
+            days = message.text.split()[1]
+            key = "NEJA-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=12))
+            # ل ڤێرێ پاشکەفت دناڤ داتا دا
+            bot.reply_to(message, f"<b>Key Created:</b> <code>/redeem {key}</code>\n<b>Days: {days}</b>")
+        except:
+            bot.reply_to(message, "Use: /code 30")
 
-print("Bot Start On ✅")
+print("Bot is working... ✅")
 bot.infinity_polling()
