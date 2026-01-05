@@ -9,7 +9,6 @@ token = '8243541935:AAG2BVXMP-N88c16rZHrO4zLYDPC2uI5Rpc'
 bot = telebot.TeleBot(token, parse_mode="HTML")
 admin = 6421172099 
 
-# دروستکرنا فایلا داتا ئەگەر نەبیت
 if not os.path.exists('data.json'):
     with open('data.json', 'w') as f: json.dump({}, f)
 
@@ -30,47 +29,37 @@ def start(message):
 def handle_file(message):
     id = str(message.from_user.id)
     with open('data.json', 'r') as f: data = json.load(f)
-    
-    # پشکنینا VIP
     if data.get(id, {}).get('plan') != '𝗩𝗜𝗣' and message.from_user.id != admin:
         bot.reply_to(message, "<b>Buy VIP to use the checker! ❌</b>")
         return
-
     file_info = bot.get_file(message.document.file_id)
     downloaded = bot.download_file(file_info.file_path)
     with open("combo.txt", "wb") as f: f.write(downloaded)
-    
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton("Shopify Auto 💳", callback_data='run_chk'))
-    bot.reply_to(message, "<b>File Received! Choose Gateway:</b>", reply_markup=kb)
+    bot.reply_to(message, "<b>Choose Gateway:</b>", reply_markup=kb)
 
 @bot.callback_query_handler(func=lambda call: call.data == 'run_chk')
 def start_checking(call):
     bot.edit_message_text("<b>Starting Shopify Check... 🚀</b>", call.message.chat.id, call.message.message_id)
-    
-    with open("combo.txt", "r") as f:
-        cards = f.readlines()
+    with open("combo.txt", "r") as f: cards = f.readlines()
     
     checker = ShopProcessor()
     
     for card in cards:
         card = card.strip()
-        # بەکارهێنانی فایلا reg.py بۆ پاقژکرنا شێوازێ کارتێ
-        formatted_card = reg(card) 
+        formatted_card = reg(card) # ل ڤێرێ فایلا reg.py کارتێ ڕێک دێخیت
         if not formatted_card: continue
         
         try:
-            # ل ڤێرێ بۆت کارتێ دفرێژیتە ناڤ گەیتێ
-            result = checker.process_card(formatted_card) 
-            
-            if any(word in result for word in ["Approved", "CVV", "CCN", "1000"]):
-                bot.send_message(call.message.chat.id, f"<b>✅ HIT!\n💳 Card: <code>{formatted_card}</code>\n📝 Result: {result}</b>")
-        except:
-            continue
+            # بانگکرنا فەنکشنا فەحسکرنێ ژ گەیتێ تە
+            result = checker.execute(formatted_card) 
+            if any(x in result for x in ["Approved", "CVV", "CCN", "1000"]):
+                bot.send_message(call.message.chat.id, f"<b>✅ HIT: <code>{formatted_card}</code>\nResult: {result}</b>")
+        except: continue
     
     bot.send_message(call.message.chat.id, "<b>Checking Finished! ✅</b>")
 
-# --- فەرمانێن ئەدمینی و ڕیدیم (وەک خۆ بهێڵە) ---
 @bot.message_handler(commands=["code"])
 def create_code(message):
     if message.from_user.id != admin: return
