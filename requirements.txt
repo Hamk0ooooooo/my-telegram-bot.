@@ -8,3 +8,4 @@ requests_toolbelt
 pyfiglet
 colorama
 getuseragent
+user_agent
