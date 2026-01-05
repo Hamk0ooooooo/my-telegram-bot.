@@ -81,4 +81,20 @@ def create_code(message):
         with open('data.json', 'r') as f: data = json.load(f)
         data[key] = {"plan": "𝗩𝗜𝗣", "time": expire}
         with open('data.json', 'w') as f: json.dump(data, f, indent=4)
-        bot.reply_to(message, f"<b>Key:</b>
+        bot.reply_to(message, f"<b>Key:</b> <code>/redeem {key}</code>")
+    except: bot.reply_to(message, "Use: /code 24")
+
+@bot.message_handler(func=lambda m: m.text and m.text.startswith('/redeem'))
+def redeem(message):
+    id = str(message.from_user.id)
+    try:
+        key = message.text.split()[1]
+        with open('data.json', 'r') as f: data = json.load(f)
+        if key in data:
+            data[id] = {"plan": "𝗩𝗜𝗣", "timer": data[key]['time']}
+            del data[key]
+            with open('data.json', 'w') as f: json.dump(data, f, indent=4)
+            bot.reply_to(message, "<b>VIP Activated! ✅</b>")
+    except: pass
+
+bot.infinity_polling()
