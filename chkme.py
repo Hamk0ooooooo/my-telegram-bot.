@@ -9,13 +9,17 @@ token = '8243541935:AAG2BVXMP-N88c16rZHrO4zLYDPC2uI5Rpc'
 bot = telebot.TeleBot(token, parse_mode="HTML")
 admin = 6421172099 
 
+# دروستکرنا فایلا داتا ئەگەر نەبیت
 if not os.path.exists('data.json'):
     with open('data.json', 'w') as f: json.dump({}, f)
 
 @bot.message_handler(commands=["start"])
 def start(message):
     id = str(message.from_user.id)
-    with open('data.json', 'r') as f: data = json.load(f)
+    with open('data.json', 'r') as f:
+        try: data = json.load(f)
+        except: data = {}
+    
     plan = data.get(id, {}).get('plan', '𝗙𝗥𝗘𝗘')
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton(text="✨ OWNER ✨", url="https://t.me/d_7amko"))
@@ -41,18 +45,19 @@ def start_checking(call):
     bot.edit_message_text("<b>Starting Shopify Check... 🚀</b>", call.message.chat.id, call.message.message_id)
     with open("combo.txt", "r") as f: cards = f.readlines()
     
-    # دروستکرنا دانەیا فەحسکرنێ
+    # دروستکرنا دانەیا فەحسکرنێ ژ گەیتێ تە
     checker = ShopProcessor()
     
     for card in cards:
         card = card.strip()
-        formatted_card = reg(card) # ڕێکخستنا شێوازێ کارتێ
+        formatted_card = reg(card) # بەکارهێنانی فایلی reg.py بۆ ڕێکخستنی کارتەکە
         if not formatted_card: continue
         
         try:
-            # بانگکرنا فەنکشنا فەحسکرنێ ژ گەیتێ
+            # بانگکرنا فەنکشنا فەحسکرنێ
+            # تێبینی: من فەنکشنی process_card د ناڤ کۆدی تە دا دیت
             result = checker.process_card(formatted_card) 
-            if "Approved" in result or "CVV" in result:
+            if "Approved" in result or "CVV" in result or "CCN" in result:
                 bot.send_message(call.message.chat.id, f"<b>✅ HIT: {formatted_card}\nResult: {result}</b>")
         except: continue
     
@@ -61,23 +66,27 @@ def start_checking(call):
 @bot.message_handler(commands=["code"])
 def create_code(message):
     if message.from_user.id != admin: return
-    h = int(message.text.split()[1])
-    key = "NEJA-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
-    expire = (datetime.now() + timedelta(hours=h)).strftime("%Y-%m-%d %H:%M")
-    with open('data.json', 'r') as f: data = json.load(f)
-    data[key] = {"plan": "𝗩𝗜𝗣", "time": expire}
-    with open('data.json', 'w') as f: json.dump(data, f, indent=4)
-    bot.reply_to(message, f"<b>Key:</b> <code>/redeem {key}</code>")
+    try:
+        h = int(message.text.split()[1])
+        key = "NEJA-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        expire = (datetime.now() + timedelta(hours=h)).strftime("%Y-%m-%d %H:%M")
+        with open('data.json', 'r') as f: data = json.load(f)
+        data[key] = {"plan": "𝗩𝗜𝗣", "time": expire}
+        with open('data.json', 'w') as f: json.dump(data, f, indent=4)
+        bot.reply_to(message, f"<b>Key:</b> <code>/redeem {key}</code>")
+    except: bot.reply_to(message, "Use: /code 24")
 
 @bot.message_handler(func=lambda m: m.text and m.text.startswith('/redeem'))
 def redeem(message):
     id = str(message.from_user.id)
-    key = message.text.split()[1]
-    with open('data.json', 'r') as f: data = json.load(f)
-    if key in data:
-        data[id] = {"plan": "𝗩𝗜𝗣", "timer": data[key]['time']}
-        del data[key]
-        with open('data.json', 'w') as f: json.dump(data, f, indent=4)
-        bot.reply_to(message, "<b>VIP Activated! ✅</b>")
+    try:
+        key = message.text.split()[1]
+        with open('data.json', 'r') as f: data = json.load(f)
+        if key in data:
+            data[id] = {"plan": "𝗩𝗜𝗣", "timer": data[key]['time']}
+            del data[key]
+            with open('data.json', 'w') as f: json.dump(data, f, indent=4)
+            bot.reply_to(message, "<b>VIP Activated! ✅</b>")
+    except: pass
 
 bot.infinity_polling()
